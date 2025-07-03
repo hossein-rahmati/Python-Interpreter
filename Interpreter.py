@@ -1,48 +1,60 @@
 class Interpreter:
     def __init__(self):
         self.stack = []
+        self.environment = {}
 
-    def LOAD_VALUE(self, number):
-        self.stack.append(number)
+    def STORE_NAME(self, name):
+        val = self.stack.pop()
+        self.environment[name] = val
 
-    def ADD_TWO_VALUES(self):
-        first_num = self.stack.pop()
-        second_num = self.stack.pop()
-        sum_result = first_num + second_num
-        self.stack.append(sum_result)
+    def LOAD_NAME(self, name):
+        val = self.environment[name]
+        self.stack.append(val)
 
-    def PRINT_ANSWER(self):
-        answer = self.stack.pop()
-        print(answer)
+    def parse_argument(self, instruction, argument, what_to_execute):
+        numbers = ["LOAD_VALUE"]
+        names = ["LOAD_NAME", "STORE_NAME"]
+
+        if instruction in numbers:
+            argument = what_to_execute["numbers"][argument]
+        elif instruction in names:
+            argument = what_to_execute["names"][argument]
+
+        return argument
 
     def run_code(self, what_to_execute):
         instructions = what_to_execute["instructions"]
-        numbers = what_to_execute["numbers"]
+        for each_step in instructions:
+            instruction, argument = each_step
+            argument = self.parse_argument(instruction, argument, what_to_execute)
 
-        for step in instructions:
-            instructions, argument = step
-
-            if instructions == "LOAD_VALUE":
-                number = numbers[argument]
-                self.LOAD_VALUE(number)
-
-            if instructions == "ADD_TWO_VALUES":
+            if instruction == "LOAD_VALUE":
+                self.LOAD_VALUE(argument)
+            elif instruction == "ADD_TWO_VALUES":
                 self.ADD_TWO_VALUES()
-
-            if instructions == "PRINT_ANSWER":
+            elif instruction == "PRINT_ANSWER":
                 self.PRINT_ANSWER()
+            elif instruction == "STORE_NAME":
+                self.STORE_NAME(argument)
+            elif instruction == "LOAD_NAME":
+                self.LOAD_NAME(argument)
 
 
 what_to_execute = {
     "instructions": [
-        ("LOAD_VALUE", 0),
-        ("LOAD_VALUE", 1),
-        ("ADD_TWO_VALUES", None),
-        ("LOAD_VALUE", 2),
-        ("ADD_TWO_VALUES", None),
-        ("PRINT_ANSWER", None),
+        [
+            ("LOAD_VALUE", 0),
+            ("STORE_NAME", 0),
+            ("LOAD_VALUE", 1),
+            ("STORE_NAME", 1),
+            ("LOAD_NAME", 0),
+            ("LOAD_NAME", 1),
+            ("ADD_TWO_VALUES", None),
+            ("PRINT_ANSWER", None),
+        ],
     ],
-    "numbers": [7, 5, 8],
+    "numbers": [7, 5],
+    "names": ["a", "b"],
 }
 
 
